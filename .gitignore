@@ -1,11 +1,10 @@
-# Build outputs
+*.iml
 .gradle/
-.idea/
-.kotlin/
-build/
-app/build/
 local.properties
-
-# APK files (optional - remove if you want to keep)
-*.apk
-*.aab
+.idea/
+.DS_Store
+build/
+/build
+/captures
+.externalNativeBuild
+.cxx
