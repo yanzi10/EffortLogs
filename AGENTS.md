@@ -5,6 +5,7 @@ These rules define project-specific expectations for AI coding agents. They comp
 ## 1. Project Context and Scope
 
 - Before changing code, inspect the relevant project structure, actual package namespace, Gradle modules and wrapper, plugin versions, `gradle/libs.versions.toml`, `AndroidManifest.xml`, architecture documentation, and relevant existing code.
+- Before implementing a backlog item, read the relevant PBI in `docs/product-backlog.md` and the applicable sections of `requirements.md`. `requirements.md` defines the required behavior, while `docs/product-backlog.md` defines implementation priority and acceptance criteria. If the two documents conflict or a PBI introduces behavior not covered by `requirements.md`, explain the discrepancy and ask for clarification before implementation.
 - Check `git status --short` before editing. Preserve all pre-existing user changes, including uncommitted changes. Never discard, overwrite, or revert them merely to obtain a clean working tree.
 - Treat the existing build configuration as the source of truth for what is currently installed. Documentation describes the agreed target architecture; it does not prove that a dependency is already installed.
 - Keep changes focused on the requested task. Do not edit unrelated features or perform unrelated cleanup.
@@ -80,6 +81,7 @@ These rules define project-specific expectations for AI coding agents. They comp
 - `AGENTS.md` defines how agents work and how the team coordinates changes.
 - `architecture.md` defines the intended technical structure and data representation.
 - `requirements.md` defines product behavior and MVP acceptance requirements.
+- `docs/product-backlog.md` defines implementation priority and the team's PBI/NFR acceptance criteria.
 - Avoid repeating detailed rules across these documents. When responsibilities change, update the owning document and keep cross-references accurate.
 
 ## 10. Git Operations
