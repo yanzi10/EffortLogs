@@ -1,4 +1,5 @@
 # Product Backlog (18 PBI / 77 SP + 10 NFR)
+# Product Backlog (17 PBI / 72 SP + 10 NFR)
 
 ## A. Yêu cầu chức năng (PBI)
 
@@ -24,6 +25,7 @@
 | 18 (P3) | PBI-12 | Privacy (Quyền riêng tư) | Là người dùng, tôi muốn xem toàn bộ dữ liệu cá nhân đã lưu trên thiết bị, xuất dữ liệu ra file và có quyền xóa dữ liệu cá nhân khi muốn. | Xem được danh sách dữ liệu; xuất CSV/JSON đủ dữ liệu; xóa có xác nhận 2 bước; sau khi xóa, CSDL rỗng và thư mục file ghi âm tạm rỗng. | 3 |
 
 **Tổng cộng:** 18 hạng mục (PBIs) — **77 Story Points**.
+**Tổng cộng:** 17 hạng mục (PBIs) — **72 Story Points**.
 
 ## B. Yêu cầu phi chức năng (NFR), áp dụng cho toàn bộ app
 
@@ -39,3 +41,4 @@
 | P2 | NFR-08 | Pin và bộ nhớ | Micro và model không chiếm tài nguyên khi không dùng. | Micro được giải phóng khi app xuống nền; không rò rỉ bộ nhớ sau 20 lần nhận diện liên tiếp; widget không đánh thức app liên tục. | PBI-08, 15 |
 | P3 | NFR-09 | Khả năng dùng và truy cập | Giao diện dễ dùng cho nhiều người. | Nút mic và các nút chính có nhãn (contentDescription); chữ theo cỡ chữ hệ thống; thao tác ghi nhanh một hoạt động ≤ 3 lần chạm. | PBI-02, 08, 15 |
 | P3 | NFR-10 | Chất lượng và bảo trì | Code dễ kiểm thử và bảo trì. | Có unit test cho logic %, chu kỳ lặp task/habit, streak, NLP và các test đó chạy qua; đo độ chính xác bằng bộ câu mẫu cố định; không crash khi người dùng từ chối quyền micro, lưu trữ hoặc thông báo. | Toàn bộ |
+| P3 | NFR-10 | Chất lượng và bảo trì | Code dễ kiểm thử và bảo trì. | Có unit test cho logic %, chu kỳ lặp task/habit, streak, NLP và các test đó chạy qua; đo độ chính xác bằng bộ câu mẫu cố định; không crash khi người dùng từ chối quyền micro hoặc thông báo. | Toàn bộ |
