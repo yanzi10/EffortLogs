@@ -34,10 +34,10 @@ class EffortLogWidgetProvider : AppWidgetProvider() {
 
             val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
             val (title, message) = when (currentHour) {
-                in 5..11 -> "🌅 Morning Plan" to "Review your checklist and tackle your morning goals."
-                in 12..16 -> "☀️ Afternoon Focus" to "Keep your momentum going! Check off your tasks."
-                in 17..21 -> "🌆 Evening Reflection" to "Time to log what you accomplished today."
-                else -> "🌙 Night Rest" to "Rest well and recharge for a productive tomorrow."
+                in 5..11 -> "Morning Plan" to "Review your checklist and tackle your morning goals."
+                in 12..16 -> "Afternoon Focus" to "Keep your momentum going! Check off your tasks."
+                in 17..21 -> "Evening Reflection" to "Time to log what you accomplished today."
+                else -> "Night Rest" to "Rest well and recharge for a productive tomorrow."
             }
 
             views.setTextViewText(R.id.widget_period_title, title)

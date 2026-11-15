@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitScreen
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitViewModel
 import com.nguyenbaolong.myapplication.feature.task.presentation.TaskScreen
@@ -63,10 +64,10 @@ fun PlannerScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     val tabs = listOf(
-                        "📋 Daily Schedule",
-                        "🔁 Core Habits"
+                        AppIcons.Schedule to "Daily Schedule",
+                        AppIcons.Habits to "Core Habits"
                     )
-                    tabs.forEachIndexed { index, title ->
+                    tabs.forEachIndexed { index, (icon, title) ->
                         val isSelected = selectedTab == index
                         Surface(
                             onClick = { selectedTab = index },
@@ -78,7 +79,18 @@ fun PlannerScreen(
                                 .weight(1f)
                                 .fillMaxHeight()
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
                                 Text(
                                     text = title,
                                     style = MaterialTheme.typography.labelMedium,
@@ -103,8 +115,15 @@ fun PlannerScreen(
                     modifier = Modifier.padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(
+                        imageVector = AppIcons.Sparkle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "✨ AI Plan",
+                        text = "AI Plan",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

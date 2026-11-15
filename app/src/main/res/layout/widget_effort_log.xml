@@ -39,7 +39,7 @@
             android:background="#4F378B"
             android:paddingHorizontal="12dp"
             android:paddingVertical="6dp"
-            android:text="🎙️ Quick Log"
+            android:text="Quick Log"
             android:textColor="#FFFFFF"
             android:textSize="12sp"
             android:textStyle="bold" />

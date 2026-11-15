@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nguyenbaolong.myapplication.R
 import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitUiItem
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitUiState
@@ -76,10 +77,10 @@ fun TodayScreen(
     val today = LocalDate.now()
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
-    val (greeting, greetingEmoji) = when (hour) {
-        in 5..11 -> "Good morning" to "🌅"
-        in 12..17 -> "Good afternoon" to "☀️"
-        else -> "Good evening" to "🌙"
+    val (greeting, greetingIcon) = when (hour) {
+        in 5..11 -> "Good morning" to AppIcons.Morning
+        in 12..17 -> "Good afternoon" to AppIcons.Afternoon
+        else -> "Good evening" to AppIcons.Evening
     }
 
     val formattedDate = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US))
@@ -138,12 +139,21 @@ fun TodayScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = "$greeting $greetingEmoji",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = greetingIcon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = greeting,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
 
                     Surface(
@@ -152,7 +162,12 @@ fun TodayScreen(
                         modifier = Modifier.size(40.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("⚡", fontSize = 18.sp)
+                            Icon(
+                                imageVector = AppIcons.Bolt,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
@@ -247,7 +262,12 @@ fun TodayScreen(
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("🔥", fontSize = 10.sp)
+                                        Icon(
+                                            imageVector = AppIcons.Streak,
+                                            contentDescription = null,
+                                            tint = Color(0xFFD97706),
+                                            modifier = Modifier.size(12.dp)
+                                        )
                                         Spacer(Modifier.width(4.dp))
                                         Text(
                                             text = "$completedHabits Habits Kept",
@@ -282,7 +302,12 @@ fun TodayScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📋", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = AppIcons.Schedule,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = "Daily Schedule",
@@ -323,7 +348,12 @@ fun TodayScreen(
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("🎉", fontSize = 16.sp)
+                                        Icon(
+                                            imageVector = AppIcons.Celebrate,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.secondary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                         Spacer(Modifier.width(8.dp))
                                         Text(
                                             text = "All tasks completed for today!",
@@ -386,7 +416,12 @@ fun TodayScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🔁", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = AppIcons.Habits,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = "Core Habits",
@@ -427,7 +462,12 @@ fun TodayScreen(
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("🔥", fontSize = 16.sp)
+                                        Icon(
+                                            imageVector = AppIcons.Streak,
+                                            contentDescription = null,
+                                            tint = Color(0xFFD97706),
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                         Spacer(Modifier.width(8.dp))
                                         Text(
                                             text = "All core habits checked off today! Great streak.",
@@ -490,7 +530,12 @@ fun TodayScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📖", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = AppIcons.Journal,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = "Effort Journal",
@@ -530,7 +575,13 @@ fun TodayScreen(
                                     .weight(1f)
                                     .height(44.dp)
                             ) {
-                                Text("🎙️ Voice Entry", fontWeight = FontWeight.Bold)
+                                Icon(
+                                    imageVector = AppIcons.Mic,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text("Voice Entry", fontWeight = FontWeight.Bold)
                             }
 
                             OutlinedButton(
@@ -540,7 +591,13 @@ fun TodayScreen(
                                     .weight(1f)
                                     .height(44.dp)
                             ) {
-                                Text("✍️ Quick Log", fontWeight = FontWeight.SemiBold)
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text("Quick Log", fontWeight = FontWeight.SemiBold)
                             }
                         }
                     }
@@ -597,16 +654,25 @@ private fun CompactTaskSummaryRow(
                     color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                 )
                 task.timeOfDay?.let { tod ->
-                    val todLabel = when (tod) {
-                        TimeOfDay.MORNING -> "🌅 Morning"
-                        TimeOfDay.AFTERNOON -> "☀️ Afternoon"
-                        TimeOfDay.EVENING -> "🌙 Evening"
+                    val (todIcon, todLabel) = when (tod) {
+                        TimeOfDay.MORNING -> AppIcons.Morning to "Morning"
+                        TimeOfDay.AFTERNOON -> AppIcons.Afternoon to "Afternoon"
+                        TimeOfDay.EVENING -> AppIcons.Evening to "Evening"
                     }
-                    Text(
-                        text = todLabel,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = todIcon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Spacer(Modifier.width(2.dp))
+                        Text(
+                            text = todLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
@@ -652,15 +718,29 @@ private fun CompactHabitSummaryRow(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     item.habit.cue?.let { cue ->
+                        Icon(
+                            imageVector = AppIcons.Reminder,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Spacer(Modifier.width(2.dp))
                         Text(
-                            text = "⏰ $cue  ",
+                            text = "$cue  ",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     if (item.currentStreak > 0) {
+                        Icon(
+                            imageVector = AppIcons.Streak,
+                            contentDescription = null,
+                            tint = Color(0xFFD97706),
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Spacer(Modifier.width(2.dp))
                         Text(
-                            text = "🔥 ${item.currentStreak}d streak",
+                            text = "${item.currentStreak}d streak",
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                             color = Color(0xFFD97706),
                             fontWeight = FontWeight.Bold

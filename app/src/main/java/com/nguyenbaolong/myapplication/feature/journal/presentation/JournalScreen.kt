@@ -40,8 +40,9 @@ import com.nguyenbaolong.myapplication.R
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.core.utils.getCategoryColor
 import com.nguyenbaolong.myapplication.core.utils.getCategoryDarkBg
-import com.nguyenbaolong.myapplication.core.utils.getCategoryEmoji
 import com.nguyenbaolong.myapplication.core.utils.getCategoryName
+import com.nguyenbaolong.myapplication.core.utils.getCategoryIcon
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityCategory
 import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityLogEntity
 import com.nguyenbaolong.myapplication.feature.journal.data.local.InputType
@@ -352,11 +353,20 @@ private fun ModernDateSwitcher(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = if (selectedDate == LocalDate.now()) "📅 Today • " else "📅 ",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                    Icon(
+                        imageVector = AppIcons.Calendar,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
                     )
+                    Spacer(Modifier.width(6.dp))
+                    if (selectedDate == LocalDate.now()) {
+                        Text(
+                            text = "Today • ",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Text(
                         text = selectedDate.format(DateTimeFormatter.ofPattern("EEE, MMMM d", Locale.US)),
                         style = MaterialTheme.typography.bodyMedium,
@@ -457,7 +467,7 @@ private fun ModernInputBar(
  * ● Title
  * "Quote / description in italics"
  * [ Category Badge ]
- * ⏱ Duration   📅 Time   [🎙 voice]    Edit / Delete
+ * Duration   Time   [voice]    Edit / Delete
  */
 @Composable
 private fun ModernJournalCard(
@@ -549,13 +559,24 @@ private fun ModernJournalCard(
                     color = getCategoryDarkBg(log.category),
                     border = BorderStroke(1.dp, getCategoryColor(log.category).copy(alpha = 0.4f))
                 ) {
-                    Text(
-                        text = "${getCategoryEmoji(log.category)} ${getCategoryName(log.category)}",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = getCategoryColor(log.category),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = getCategoryIcon(log.category),
+                            contentDescription = null,
+                            tint = getCategoryColor(log.category),
+                            modifier = Modifier.size(12.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = getCategoryName(log.category),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = getCategoryColor(log.category)
+                        )
+                    }
                 }
 
                 // Metadata Row: Duration, Time, Voice Tag
@@ -564,24 +585,42 @@ private fun ModernJournalCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     log.durationMinutes?.let { mins ->
-                        Text(
-                            text = "⏱ $mins min",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = AppIcons.Reminder,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = "$mins min",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
 
                     log.timeOfDay?.let { tod ->
-                        val todEmoji = when (tod) {
-                            TimeOfDay.MORNING -> "🌅"
-                            TimeOfDay.AFTERNOON -> "☀️"
-                            TimeOfDay.EVENING -> "🌙"
+                        val (todIcon, todLabel) = when (tod) {
+                            TimeOfDay.MORNING -> AppIcons.Morning to "Morning"
+                            TimeOfDay.AFTERNOON -> AppIcons.Afternoon to "Afternoon"
+                            TimeOfDay.EVENING -> AppIcons.Evening to "Evening"
                         }
-                        Text(
-                            text = "$todEmoji ${tod.name.lowercase().replaceFirstChar { it.uppercase() }}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = todIcon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = todLabel,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
 
                     if (log.inputType == InputType.VOICE) {
@@ -589,12 +628,23 @@ private fun ModernJournalCard(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
                         ) {
-                            Text(
-                                text = "🎙 voice",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
+                            Row(
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = AppIcons.Mic,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(10.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = "voice",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -629,7 +679,12 @@ private fun ModernJournalEmptyState(
                 modifier = Modifier.size(56.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text("📖", style = MaterialTheme.typography.titleLarge)
+                    Icon(
+                        imageVector = AppIcons.Journal,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
 
@@ -643,7 +698,7 @@ private fun ModernJournalEmptyState(
             )
 
             Text(
-                text = "Tap the microphone 🎙️ or type above to record your effort.",
+                text = "Tap the microphone or type above to record your effort.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 4.dp)
@@ -661,14 +716,14 @@ private fun ModernJournalEmptyState(
             Spacer(Modifier.height(8.dp))
 
             val samples = listOf(
-                "📚 Studied math for 2 hours this morning",
-                "🏃 Gym workout for 45 minutes tonight",
-                "💼 Team meeting for one hour this afternoon"
+                AppIcons.Study to "Studied math for 2 hours this morning",
+                AppIcons.Fitness to "Gym workout for 45 minutes tonight",
+                AppIcons.Work to "Team meeting for one hour this afternoon"
             )
 
-            samples.forEach { sample ->
+            samples.forEach { (icon, sampleText) ->
                 Surface(
-                    onClick = { onSampleClick(sample.substring(2).trim()) },
+                    onClick = { onSampleClick(sampleText) },
                     shape = RoundedCornerShape(10.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
@@ -680,8 +735,15 @@ private fun ModernJournalEmptyState(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
                         Text(
-                            text = sample,
+                            text = sampleText,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
@@ -724,11 +786,11 @@ private fun EditLogDialog(
 
                 Text("Category", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
                 val categories = listOf(
-                    ActivityCategory.STUDY to "📚 Study",
-                    ActivityCategory.FITNESS to "🏃 Fitness",
-                    ActivityCategory.WORK to "💼 Work",
-                    ActivityCategory.PERSONAL to "🌿 Personal",
-                    ActivityCategory.OTHER to "🎯 Other"
+                    ActivityCategory.STUDY to "Study",
+                    ActivityCategory.FITNESS to "Fitness",
+                    ActivityCategory.WORK to "Work",
+                    ActivityCategory.PERSONAL to "Personal",
+                    ActivityCategory.OTHER to "Other"
                 )
 
                 Row(
@@ -746,7 +808,18 @@ private fun EditLogDialog(
                                 .weight(1f)
                                 .height(38.dp)
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            Row(
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = getCategoryIcon(cat),
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
                                 Text(
                                     text = label,
                                     style = MaterialTheme.typography.labelSmall,

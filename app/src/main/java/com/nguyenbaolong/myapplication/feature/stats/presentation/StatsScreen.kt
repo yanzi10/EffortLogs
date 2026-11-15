@@ -18,10 +18,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityCategory
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.core.utils.getCategoryColor
-import com.nguyenbaolong.myapplication.core.utils.getCategoryEmoji
+import com.nguyenbaolong.myapplication.core.utils.getCategoryIcon
 import com.nguyenbaolong.myapplication.core.utils.getCategoryName
+import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityCategory
 import com.nguyenbaolong.myapplication.ui.theme.*
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -92,7 +93,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                         modifier = Modifier.size(36.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("📈", fontSize = 16.sp)
+                            Icon(
+                                imageVector = AppIcons.Trend,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }
@@ -105,7 +111,13 @@ fun StatsScreen(viewModel: StatsViewModel) {
                         .fillMaxWidth()
                         .height(44.dp)
                 ) {
-                    Text("📸 Generate & Share Performance Card", fontWeight = FontWeight.Bold)
+                    Icon(
+                        imageVector = AppIcons.Trend,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Generate & Share Performance Card", fontWeight = FontWeight.Bold)
                 }
 
                 // 2. Filter Segmented Tabs (Image 4)
@@ -167,7 +179,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                     modifier = Modifier.size(24.dp)
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        Text("💡", fontSize = 12.sp)
+                                        Icon(
+                                            imageVector = AppIcons.Insight,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(13.dp)
+                                        )
                                     }
                                 }
                                 Spacer(Modifier.width(8.dp))
@@ -237,12 +254,21 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = "📈 +12% vs last week",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = AppIcons.Trend,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = "+12% vs last week",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
 
@@ -265,7 +291,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Text("🔥", fontSize = 12.sp)
+                                Icon(
+                                    imageVector = AppIcons.Streak,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD97706),
+                                    modifier = Modifier.size(12.dp)
+                                )
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
@@ -275,12 +306,21 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = "🎯 Best streak: ${state.bestStreakAcrossHabits} days",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = AppIcons.Goal,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text(
+                                    text = "Best streak: ${state.bestStreakAcrossHabits} days",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }
@@ -299,7 +339,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📅", fontSize = 14.sp)
+                                Icon(
+                                    imageVector = AppIcons.Calendar,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     text = "Activity Heatmap",
@@ -380,7 +425,14 @@ fun StatsScreen(viewModel: StatsViewModel) {
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("🔥 Streak: ${state.bestStreakAcrossHabits} days", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), fontWeight = FontWeight.SemiBold)
+                                Icon(
+                                    imageVector = AppIcons.Streak,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD97706),
+                                    modifier = Modifier.size(11.dp)
+                                )
+                                Spacer(Modifier.width(2.dp))
+                                Text("Streak: ${state.bestStreakAcrossHabits} days", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), fontWeight = FontWeight.SemiBold)
                                 Spacer(Modifier.width(6.dp))
                                 Text("• ${state.categoryStats.sumOf { it.count }} activities", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -446,7 +498,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                         modifier = Modifier.width(95.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(getCategoryEmoji(catStat.category), fontSize = 13.sp)
+                                        Icon(
+                                            imageVector = getCategoryIcon(catStat.category),
+                                            contentDescription = null,
+                                            tint = getCategoryColor(catStat.category),
+                                            modifier = Modifier.size(13.dp)
+                                        )
                                         Spacer(Modifier.width(6.dp))
                                         Text(
                                             text = getCategoryName(catStat.category),

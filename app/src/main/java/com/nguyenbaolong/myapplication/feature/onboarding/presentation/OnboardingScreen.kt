@@ -9,6 +9,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,14 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 
 data class OnboardingStep(
     val stepIndex: Int,
-    val iconEmoji: String,
+    val icon: ImageVector,
     val badge: String,
     val title: String,
     val description: String,
@@ -34,38 +38,38 @@ data class OnboardingStep(
 val onboardingSteps = listOf(
     OnboardingStep(
         stepIndex = 0,
-        iconEmoji = "⚡",
+        icon = AppIcons.Bolt,
         badge = "Overview & Focus",
         title = "Your Daily Focus Command Center",
         description = "Effort Logs keeps your day crystal clear with progressive disclosure. See your daily focus ring, upcoming priority tasks, and habit streaks at a single glance without visual noise.",
-        highlightPills = listOf("📊 Bento Dashboard", "⚡ 1-Tap Quick Actions", "🌱 Live Companion Progress"),
+        highlightPills = listOf("Bento Dashboard Overview", "1-Tap Quick Action Logging", "Live Companion Progression"),
         accentColor = Color(0xFF4F46E5)
     ),
     OnboardingStep(
         stepIndex = 1,
-        iconEmoji = "📋",
+        icon = AppIcons.Schedule,
         badge = "Two Distinct Systems",
         title = "Daily Schedule vs. Core Habits",
         description = "Never confuse one-off chores with recurring routines again. Daily Schedule organizes tasks by morning, afternoon, and evening. Core Habits tracks recurring routines with smart rest-day streaks.",
-        highlightPills = listOf("🌅 Time-of-Day Schedule", "🔥 Rest-Day Streak Protection", "📅 Flexible Weekday Routines"),
+        highlightPills = listOf("Time-of-Day Schedule Periods", "Rest-Day Streak Protection", "Flexible Weekday Routines"),
         accentColor = Color(0xFF0284C7)
     ),
     OnboardingStep(
         stepIndex = 2,
-        iconEmoji = "🎙️",
+        icon = AppIcons.Mic,
         badge = "100% On-Device Privacy",
         title = "Offline Personal Voice Journal",
         description = "Record what you accomplished, how long it took, and how you felt. On-device offline NLP extracts activities instantly with zero cloud latency and guaranteed offline privacy.",
-        highlightPills = listOf("🔒 Zero Cloud Transmission", "⚡ Offline Speech-to-Text", "🧠 Rule-based Activity Parsing"),
+        highlightPills = listOf("Zero Cloud Transmission", "Offline Speech-to-Text Recognition", "Rule-based Activity NLP Parsing"),
         accentColor = Color(0xFF10B981)
     ),
     OnboardingStep(
         stepIndex = 3,
-        iconEmoji = "✨",
+        icon = AppIcons.Sparkle,
         badge = "Gamified Growth",
         title = "AI Assistant & Goal Companion",
         description = "Set your long-term North Star goal. Let the interactive AI assistant suggest actionable schedules and habits. Watch your Effort Sprout evolve into a legendary Cosmic Guardian as you earn XP!",
-        highlightPills = listOf("✨ Interactive Proposals", "🌟 4 Companion Growth Stages", "📸 Exportable Performance Cards"),
+        highlightPills = listOf("Interactive AI Proposals", "4 Companion Growth Stages", "Exportable Performance Share Cards"),
         accentColor = Color(0xFF8B5CF6)
     )
 )
@@ -186,7 +190,7 @@ fun OnboardingScreen(
                                 .height(50.dp)
                         ) {
                             Text(
-                                text = if (isLastStep) "Get Started 🚀" else "Next ➜",
+                                text = if (isLastStep) "Get Started ➜" else "Next ➜",
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -236,9 +240,11 @@ fun OnboardingScreen(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = currentItem.iconEmoji,
-                        fontSize = 54.sp
+                    Icon(
+                        imageVector = currentItem.icon,
+                        contentDescription = null,
+                        tint = currentItem.accentColor,
+                        modifier = Modifier.size(54.dp)
                     )
                 }
 
@@ -301,7 +307,12 @@ fun OnboardingScreen(
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("✓", fontWeight = FontWeight.Bold, color = currentItem.accentColor)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = currentItem.accentColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
                                 Spacer(Modifier.width(10.dp))
                                 Text(
                                     text = pill,
