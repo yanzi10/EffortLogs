@@ -11,10 +11,9 @@ data class HabitWithStreak(
     val completionDates: List<LocalDate>
 )
 
-fun calculateStreaks(dates: List<LocalDate>): Pair<Int, Int> {
+fun calculateStreaks(dates: List<LocalDate>, today: LocalDate = LocalDate.now()): Pair<Int, Int> {
     if (dates.isEmpty()) return 0 to 0
-    val sorted = dates.sortedDescending()
-    val today = LocalDate.now()
+    val sorted = dates.distinct().sortedDescending()
     val yesterday = today.minusDays(1)
 
     // currentStreak: consecutive chain ending today or yesterday
@@ -24,13 +23,15 @@ fun calculateStreaks(dates: List<LocalDate>): Pair<Int, Int> {
         for (date in sorted) {
             if (date == cursor) {
                 current++
-                cursor = cursor!!.minusDays(1)
-            } else break
+                cursor = cursor.minusDays(1)
+            } else if (date.isBefore(cursor)) {
+                break
+            }
         }
     }
 
     // bestStreak: max consecutive chain
-    var best = 0
+    var best = 1
     var streak = 1
     for (i in 1 until sorted.size) {
         if (sorted[i] == sorted[i - 1].minusDays(1)) {

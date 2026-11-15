@@ -16,7 +16,8 @@ data class HabitUiItem(
     val habit: HabitEntity,
     val completedToday: Boolean,
     val currentStreak: Int,
-    val bestStreak: Int
+    val bestStreak: Int,
+    val completionDates: List<LocalDate> = emptyList()
 )
 
 sealed interface HabitUiState {
@@ -39,7 +40,8 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
                         habit = habit,
                         completedToday = dates.contains(today),
                         currentStreak = current,
-                        bestStreak = best
+                        bestStreak = best,
+                        completionDates = dates
                     )
                 }
             }
@@ -49,19 +51,31 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
 
     fun addHabit(name: String, cue: String?, targetPerWeek: Int) {
         viewModelScope.launch {
-            repository.addHabit(HabitEntity(name = name, cue = cue, targetCompletionsPerWeek = targetPerWeek.coerceIn(1, 7)))
+            repository.addHabit(
+                HabitEntity(
+                    name = name,
+                    cue = cue,
+                    targetCompletionsPerWeek = targetPerWeek.coerceIn(1, 7)
+                )
+            )
         }
     }
 
     fun toggleToday(habitId: Long) {
-        viewModelScope.launch { repository.toggleCompletion(habitId, LocalDate.now()) }
+        viewModelScope.launch {
+            repository.toggleCompletion(habitId, LocalDate.now())
+        }
     }
 
     fun deleteHabit(habit: HabitEntity) {
-        viewModelScope.launch { repository.deleteHabit(habit) }
+        viewModelScope.launch {
+            repository.deleteHabit(habit)
+        }
     }
 
     fun updateHabit(habit: HabitEntity, newName: String, newCue: String?) {
-        viewModelScope.launch { repository.updateHabit(habit.copy(name = newName, cue = newCue)) }
+        viewModelScope.launch {
+            repository.updateHabit(habit.copy(name = newName, cue = newCue))
+        }
     }
 }
