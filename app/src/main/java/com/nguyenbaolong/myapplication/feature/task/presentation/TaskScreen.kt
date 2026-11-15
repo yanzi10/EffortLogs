@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.feature.task.data.local.TaskEntity
 
@@ -62,22 +63,33 @@ fun TaskScreen(
                         ) {
                             val grouped = tasks.groupBy { it.timeOfDay }
                             val periods = listOf(
-                                Triple(TimeOfDay.MORNING, "Morning", "🌅"),
-                                Triple(TimeOfDay.AFTERNOON, "Afternoon", "☀️"),
-                                Triple(TimeOfDay.EVENING, "Evening", "🌙")
+                                Triple(TimeOfDay.MORNING, "Morning", AppIcons.Morning),
+                                Triple(TimeOfDay.AFTERNOON, "Afternoon", AppIcons.Afternoon),
+                                Triple(TimeOfDay.EVENING, "Evening", AppIcons.Evening)
                             )
 
-                            periods.forEach { (tod, label, emoji) ->
+                            periods.forEach { (tod, label, icon) ->
                                 val group = grouped[tod]
                                 if (!group.isNullOrEmpty()) {
                                     item {
-                                        Text(
-                                            text = "$emoji $label",
-                                            style = MaterialTheme.typography.labelLarge,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
                                             modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                                        )
+                                        ) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(Modifier.width(6.dp))
+                                            Text(
+                                                text = label,
+                                                style = MaterialTheme.typography.labelLarge,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     }
                                     items(group, key = { it.id }) { task ->
                                         ModernTaskCard(
@@ -94,13 +106,24 @@ fun TaskScreen(
                             val unscheduled = grouped[null]
                             if (!unscheduled.isNullOrEmpty()) {
                                 item {
-                                    Text(
-                                        text = "📌 Any Time",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary,
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                                    )
+                                    ) {
+                                        Icon(
+                                            imageVector = AppIcons.PushPin,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            text = "Any Time",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
                                 }
                                 items(unscheduled, key = { it.id }) { task ->
                                     ModernTaskCard(
@@ -303,7 +326,12 @@ private fun ModernEmptyState(onAddTask: () -> Unit) {
                 modifier = Modifier.size(72.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text("✨", style = MaterialTheme.typography.headlineMedium)
+                    Icon(
+                        imageVector = AppIcons.Sparkle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(36.dp)
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(14.dp))
@@ -338,16 +366,16 @@ fun TimeOfDaySelector(
     modifier: Modifier = Modifier
 ) {
     val options = listOf(
-        Triple(TimeOfDay.MORNING, "Morning", "🌅"),
-        Triple(TimeOfDay.AFTERNOON, "Afternoon", "☀️"),
-        Triple(TimeOfDay.EVENING, "Evening", "🌙")
+        Triple(TimeOfDay.MORNING, "Morning", AppIcons.Morning),
+        Triple(TimeOfDay.AFTERNOON, "Afternoon", AppIcons.Afternoon),
+        Triple(TimeOfDay.EVENING, "Evening", AppIcons.Evening)
     )
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        options.forEach { (tod, label, emoji) ->
+        options.forEach { (tod, label, icon) ->
             val isSelected = selectedTimeOfDay == tod
             Surface(
                 onClick = { onSelect(if (isSelected) null else tod) },
@@ -371,11 +399,16 @@ fun TimeOfDaySelector(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = emoji,
-                        style = MaterialTheme.typography.bodySmall
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (isSelected)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(Modifier.width(3.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),

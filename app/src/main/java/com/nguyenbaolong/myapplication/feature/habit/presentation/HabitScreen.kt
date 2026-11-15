@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.feature.habit.data.local.HabitEntity
 import com.nguyenbaolong.myapplication.ui.theme.*
 import java.time.DayOfWeek
@@ -33,7 +34,7 @@ import java.time.temporal.TemporalAdjusters
  * Features:
  * 1. "This week" 7-day circular tracker header (M T W T F S S)
  * 2. "ACTIVE HABITS • X" section header
- * 3. Habit cards with icon box, name, cue, streak 🔥 and 7-day completion pills
+ * 3. Habit cards with icon box, name, cue, streak and 7-day completion pills
  * 4. Glowing violet FAB (+)
  */
 @Composable
@@ -235,7 +236,7 @@ fun HabitScreen(
 
 /**
  * Modern Habit Card matching Image 5 Right:
- * [ Icon ] Name, Cue | Streak 🔥
+ * [ Icon ] Name, Cue | Streak badge
  * Sub-row: M T W T F S S with individual day completion pills!
  */
 @Composable
@@ -250,12 +251,12 @@ private fun ModernHabitCard(
     val today = LocalDate.now()
     val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
-    val habitEmoji = when {
-        item.habit.name.contains("water", ignoreCase = true) || item.habit.name.contains("uống", ignoreCase = true) -> "💧"
-        item.habit.name.contains("meditat", ignoreCase = true) || item.habit.name.contains("thiền", ignoreCase = true) -> "🧘"
-        item.habit.name.contains("gym", ignoreCase = true) || item.habit.name.contains("chạy", ignoreCase = true) || item.habit.name.contains("tập", ignoreCase = true) -> "🏋️"
-        item.habit.name.contains("read", ignoreCase = true) || item.habit.name.contains("study", ignoreCase = true) || item.habit.name.contains("học", ignoreCase = true) -> "📖"
-        else -> "🎯"
+    val habitIcon = when {
+        item.habit.name.contains("water", ignoreCase = true) || item.habit.name.contains("uống", ignoreCase = true) -> AppIcons.Water
+        item.habit.name.contains("meditat", ignoreCase = true) || item.habit.name.contains("thiền", ignoreCase = true) -> AppIcons.Personal
+        item.habit.name.contains("gym", ignoreCase = true) || item.habit.name.contains("chạy", ignoreCase = true) || item.habit.name.contains("tập", ignoreCase = true) -> AppIcons.Strength
+        item.habit.name.contains("read", ignoreCase = true) || item.habit.name.contains("study", ignoreCase = true) || item.habit.name.contains("học", ignoreCase = true) -> AppIcons.Study
+        else -> AppIcons.Goal
     }
 
     Surface(
@@ -287,7 +288,12 @@ private fun ModernHabitCard(
                         modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(habitEmoji, fontSize = 22.sp)
+                            Icon(
+                                imageVector = habitIcon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(26.dp)
+                            )
                         }
                     }
 
@@ -321,12 +327,21 @@ private fun ModernHabitCard(
                             "WEEKLY_TARGET" -> "${item.habit.targetCompletionsPerWeek}x / week"
                             else -> "Daily"
                         }
-                        Text(
-                            text = "🗓️ $freqLabel",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = AppIcons.Calendar,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = freqLabel,
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 }
 
@@ -343,7 +358,12 @@ private fun ModernHabitCard(
                         ) {
                             Text("${item.currentStreak}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(Modifier.width(2.dp))
-                            Text("🔥", fontSize = 12.sp)
+                            Icon(
+                                imageVector = AppIcons.Streak,
+                                contentDescription = null,
+                                tint = Color(0xFFD97706),
+                                modifier = Modifier.size(12.dp)
+                            )
                             Spacer(Modifier.width(2.dp))
                             Text("day", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -444,7 +464,12 @@ private fun ModernHabitEmptyState(onAddHabit: () -> Unit) {
                 modifier = Modifier.size(56.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Text("🔥", style = MaterialTheme.typography.titleLarge)
+                    Icon(
+                        imageVector = AppIcons.Streak,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
             Spacer(Modifier.height(10.dp))

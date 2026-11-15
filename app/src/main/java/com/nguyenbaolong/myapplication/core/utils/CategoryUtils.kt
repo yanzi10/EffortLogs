@@ -1,8 +1,18 @@
 package com.nguyenbaolong.myapplication.core.utils
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityCategory
 import com.nguyenbaolong.myapplication.ui.theme.*
+
+fun getCategoryIcon(category: ActivityCategory): ImageVector = when (category) {
+    ActivityCategory.STUDY -> AppIcons.Study
+    ActivityCategory.FITNESS -> AppIcons.Fitness
+    ActivityCategory.WORK -> AppIcons.Work
+    ActivityCategory.PERSONAL -> AppIcons.Personal
+    ActivityCategory.OTHER -> AppIcons.Other
+}
 
 fun getCategoryEmoji(category: ActivityCategory): String = when (category) {
     ActivityCategory.STUDY -> "📖"

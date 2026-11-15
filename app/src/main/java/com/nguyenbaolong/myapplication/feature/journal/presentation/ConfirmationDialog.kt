@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.nguyenbaolong.myapplication.R
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
+import com.nguyenbaolong.myapplication.core.utils.getCategoryIcon
 import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityCategory
 import com.nguyenbaolong.myapplication.feature.journal.data.local.ActivityLogEntity
 import com.nguyenbaolong.myapplication.feature.journal.data.local.InputType
@@ -52,7 +54,7 @@ import java.time.format.DateTimeFormatter
  *    - Category chips
  *    - Extracted Duration (- / +)
  *    - Time & Date (Morning / Afternoon / Evening · Date)
- *    - Emotion & Sentiment (😊 Positive)
+ *    - Emotion & Sentiment (Positive)
  * 5. Action Buttons: Cancel & Save Activity
  */
 @Composable
@@ -115,7 +117,12 @@ fun ConfirmationDialog(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text("👤", fontSize = 14.sp)
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }
@@ -215,8 +222,13 @@ fun ConfirmationDialog(
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("✨", fontSize = 10.sp)
-                                    Spacer(Modifier.width(2.dp))
+                                    Icon(
+                                        imageVector = AppIcons.Sparkle,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.size(11.dp)
+                                    )
+                                    Spacer(Modifier.width(3.dp))
                                     Text(
                                         text = "94% confidence",
                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
@@ -266,7 +278,12 @@ fun ConfirmationDialog(
                                 modifier = Modifier.size(24.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🧠", fontSize = 12.sp)
+                                    Icon(
+                                        imageVector = AppIcons.SmartAI,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(8.dp))
@@ -306,7 +323,12 @@ fun ConfirmationDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("🏃", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Action,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
                                         text = action,
@@ -343,10 +365,10 @@ fun ConfirmationDialog(
                         Spacer(Modifier.height(6.dp))
 
                         val categoryList = listOf(
-                            ActivityCategory.FITNESS to "🏃 Fitness",
-                            ActivityCategory.STUDY to "📖 Study",
-                            ActivityCategory.WORK to "💼 Work",
-                            ActivityCategory.OTHER to "••• Other"
+                            ActivityCategory.FITNESS to "Fitness",
+                            ActivityCategory.STUDY to "Study",
+                            ActivityCategory.WORK to "Work",
+                            ActivityCategory.OTHER to "Other"
                         )
 
                         Row(
@@ -363,7 +385,18 @@ fun ConfirmationDialog(
                                         .weight(1f)
                                         .height(36.dp)
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
+                                    Row(
+                                        modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = getCategoryIcon(cat),
+                                            contentDescription = null,
+                                            tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
                                         Text(
                                             text = label,
                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
@@ -401,12 +434,21 @@ fun ConfirmationDialog(
                                     }
                                 }
 
-                                Text(
-                                    text = "⏱ $durationMinutes min",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 10.dp)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = AppIcons.Reminder,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = "$durationMinutes min",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp)
+                                    )
+                                }
 
                                 Surface(
                                     onClick = { durationMinutes += 15 },
@@ -444,18 +486,30 @@ fun ConfirmationDialog(
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    val todLabel = when (timeOfDay) {
-                                        TimeOfDay.MORNING -> "🌅 Morning"
-                                        TimeOfDay.AFTERNOON -> "☀️ Afternoon"
-                                        TimeOfDay.EVENING -> "🌙 Evening"
+                                    val (todIcon, todLabel) = when (timeOfDay) {
+                                        TimeOfDay.MORNING -> AppIcons.Morning to "Morning"
+                                        TimeOfDay.AFTERNOON -> AppIcons.Afternoon to "Afternoon"
+                                        TimeOfDay.EVENING -> AppIcons.Evening to "Evening"
                                     }
+                                    Icon(
+                                        imageVector = todIcon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
                                     Text(
                                         text = "$todLabel • ${activityDate.format(DateTimeFormatter.ofPattern("MMM d", java.util.Locale.US))}",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("📅", fontSize = 12.sp)
+                                    Spacer(Modifier.width(6.dp))
+                                    Icon(
+                                        imageVector = AppIcons.Calendar,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(12.dp)
+                                    )
                                 }
                             }
                         }
@@ -506,13 +560,24 @@ fun ConfirmationDialog(
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
-                                Text(
-                                    text = "😊 Positive",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = AppIcons.Done,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = "Positive",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
                             }
                         }
                     }
@@ -555,7 +620,16 @@ fun ConfirmationDialog(
                             .weight(1.5f)
                             .height(48.dp)
                     ) {
-                        Text("✓ Save Activity", fontWeight = FontWeight.Bold, color = Color.White)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = AppIcons.Done,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Save Activity", fontWeight = FontWeight.Bold, color = Color.White)
+                        }
                     }
                 }
             }

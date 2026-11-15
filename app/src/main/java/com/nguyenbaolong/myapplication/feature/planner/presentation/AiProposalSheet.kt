@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitViewModel
 import com.nguyenbaolong.myapplication.feature.planner.domain.PlannerAiEngine
@@ -47,10 +48,10 @@ fun AiProposalSheet(
     var itemsList by remember { mutableStateOf(currentProposal.items) }
 
     val quickPills = listOf(
-        "🏃 5K Running Routine",
-        "📚 Study 30m Daily",
-        "🧘 Mindfulness & Sleep",
-        "💼 Deep Work Sprint"
+        AppIcons.Fitness to "5K Running Routine",
+        AppIcons.Study to "Study 30m Daily",
+        AppIcons.Personal to "Mindfulness & Sleep",
+        AppIcons.Work to "Deep Work Sprint"
     )
 
     Dialog(
@@ -85,7 +86,12 @@ fun AiProposalSheet(
                             modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text("🤖", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = AppIcons.AiBot,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
                             }
                         }
                         Spacer(Modifier.width(10.dp))
@@ -140,11 +146,11 @@ fun AiProposalSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    quickPills.take(2).forEach { pill ->
+                    quickPills.take(2).forEach { (icon, pillText) ->
                         Surface(
                             onClick = {
-                                promptInput = pill
-                                val plan = PlannerAiEngine.generatePlan(pill)
+                                promptInput = pillText
+                                val plan = PlannerAiEngine.generatePlan(pillText)
                                 currentProposal = plan
                                 itemsList = plan.items
                             },
@@ -152,14 +158,25 @@ fun AiProposalSheet(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
-                                text = pill,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            Row(
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = pillText,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }
@@ -263,7 +280,7 @@ fun AiProposalSheet(
                                 }
                             }
 
-                            Toast.makeText(context, "Added ${selected.size} items to Schedule & Habits! 🎉", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Added ${selected.size} items to Schedule & Habits!", Toast.LENGTH_SHORT).show()
                             onDismiss()
                         },
                         shape = RoundedCornerShape(14.dp),
@@ -316,31 +333,51 @@ private fun InteractiveProposalItemRow(
                         shape = RoundedCornerShape(6.dp),
                         color = if (item.isHabit) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primaryContainer
                     ) {
-                        Text(
-                            text = if (item.isHabit) "🔁 Habit" else "📋 Task",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            fontWeight = FontWeight.Bold,
-                            color = if (item.isHabit) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = if (item.isHabit) AppIcons.Habits else AppIcons.Schedule,
+                                contentDescription = null,
+                                tint = if (item.isHabit) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Spacer(Modifier.width(3.dp))
+                            Text(
+                                text = if (item.isHabit) "Habit" else "Task",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                fontWeight = FontWeight.Bold,
+                                color = if (item.isHabit) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
 
                     Spacer(Modifier.width(6.dp))
 
-                    val scheduleLabel = when {
-                        item.isHabit && item.frequencyType == "SPECIFIC_DAYS" -> "🗓️ Mon, Wed, Fri"
-                        item.isHabit -> "🗓️ Daily"
-                        item.timeOfDay == TimeOfDay.MORNING -> "🌅 Morning"
-                        item.timeOfDay == TimeOfDay.AFTERNOON -> "☀️ Afternoon"
-                        item.timeOfDay == TimeOfDay.EVENING -> "🌙 Evening"
-                        else -> "📌 Any Time"
+                    val (scheduleIcon, scheduleText) = when {
+                        item.isHabit && item.frequencyType == "SPECIFIC_DAYS" -> AppIcons.Calendar to "Mon, Wed, Fri"
+                        item.isHabit -> AppIcons.Calendar to "Daily"
+                        item.timeOfDay == TimeOfDay.MORNING -> AppIcons.Morning to "Morning"
+                        item.timeOfDay == TimeOfDay.AFTERNOON -> AppIcons.Afternoon to "Afternoon"
+                        item.timeOfDay == TimeOfDay.EVENING -> AppIcons.Evening to "Evening"
+                        else -> AppIcons.PushPin to "Any Time"
                     }
 
-                    Text(
-                        text = scheduleLabel,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = scheduleIcon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(10.dp)
+                        )
+                        Spacer(Modifier.width(2.dp))
+                        Text(
+                            text = scheduleText,
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(4.dp))

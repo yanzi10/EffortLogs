@@ -17,12 +17,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nguyenbaolong.myapplication.core.utils.DateUtils
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import com.nguyenbaolong.myapplication.feature.settings.AppThemeMode
 import com.nguyenbaolong.myapplication.ui.theme.*
 
@@ -97,7 +99,12 @@ fun ProfileScreen(
                     modifier = Modifier.size(36.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text("⚙️", fontSize = 16.sp)
+                        Icon(
+                            imageVector = AppIcons.Settings,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
             }
@@ -126,7 +133,12 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text("🗄️", fontSize = 12.sp)
+                            Icon(
+                                imageVector = AppIcons.Stats,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
 
                         Spacer(Modifier.height(6.dp))
@@ -171,7 +183,12 @@ fun ProfileScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Text("🎙️", fontSize = 12.sp)
+                            Icon(
+                                imageVector = AppIcons.Mic,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
 
                         Spacer(Modifier.height(6.dp))
@@ -211,7 +228,12 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📥", fontSize = 16.sp)
+                        Icon(
+                            imageVector = AppIcons.Download,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(Modifier.width(10.dp))
                         Text(
                             text = "Export All Data (JSON / CSV)",
@@ -242,7 +264,12 @@ fun ProfileScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🗑️", fontSize = 15.sp)
+                        Icon(
+                            imageVector = AppIcons.WipeData,
+                            contentDescription = null,
+                            tint = Color(0xFFB91C1C),
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(Modifier.width(10.dp))
                         Column {
                             Text(
@@ -258,7 +285,12 @@ fun ProfileScreen(
                             )
                         }
                     }
-                    Text("⚠️", fontSize = 14.sp)
+                    Icon(
+                        imageVector = AppIcons.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFB91C1C),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
 
@@ -294,7 +326,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("⏰", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Reminder,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -343,7 +380,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🎨", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Theme,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -366,16 +408,16 @@ fun ProfileScreen(
 
                         // 3 Segmented Buttons: Light, Dark, System
                         val themeOptions = listOf(
-                            AppThemeMode.LIGHT to "☀️ Light",
-                            AppThemeMode.DARK to "🌙 Dark",
-                            AppThemeMode.SYSTEM to "📱 System"
+                            Triple(AppThemeMode.LIGHT, AppIcons.Afternoon, "Light"),
+                            Triple(AppThemeMode.DARK, AppIcons.Evening, "Dark"),
+                            Triple(AppThemeMode.SYSTEM, AppIcons.SystemTheme, "System")
                         )
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            themeOptions.forEach { (mode, label) ->
+                            themeOptions.forEach { (mode, icon, label) ->
                                 val isSelected = state.settings.themeMode == mode
                                 Surface(
                                     onClick = { viewModel.setThemeMode(mode) },
@@ -385,7 +427,18 @@ fun ProfileScreen(
                                         .weight(1f)
                                         .height(38.dp)
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = null,
+                                            tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(Modifier.width(4.dp))
                                         Text(
                                             text = label,
                                             style = MaterialTheme.typography.labelSmall,
@@ -419,7 +472,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🌐", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Language,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -465,7 +523,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("📖", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Guide,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -543,7 +606,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("⏰", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Reminder,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -590,7 +658,12 @@ fun ProfileScreen(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
-                                    Text("🔁", fontSize = 14.sp)
+                                    Icon(
+                                        imageVector = AppIcons.Habits,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                             Spacer(Modifier.width(12.dp))
@@ -643,7 +716,12 @@ fun ProfileScreen(
                             modifier = Modifier.size(36.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text("🛡️", fontSize = 16.sp)
+                                Icon(
+                                    imageVector = AppIcons.Privacy,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                         Spacer(Modifier.width(12.dp))
@@ -779,7 +857,12 @@ fun ProfileScreen(
             onDismissRequest = { showAboutPrivacyDialog = false },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🛡️", fontSize = 20.sp)
+                    Icon(
+                        imageVector = AppIcons.Privacy,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text("About & Privacy", fontWeight = FontWeight.Bold)
                 }
@@ -790,22 +873,22 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     PrivacyDetailItem(
-                        icon = "🔒",
+                        icon = AppIcons.Privacy,
                         title = "100% On-Device SQLite Storage",
                         desc = "All tasks, recurring habits, streaks, and effort journal entries are stored strictly in local SQLite tables on this device. Zero cloud synchronization."
                     )
                     PrivacyDetailItem(
-                        icon = "🎙️",
+                        icon = AppIcons.Mic,
                         title = "Private Voice Recognition",
                         desc = "Speech recognition runs locally via the Android on-device engine. Voice recordings are processed in temporary memory and deleted immediately after intent extraction."
                     )
                     PrivacyDetailItem(
-                        icon = "🚫",
+                        icon = AppIcons.Block,
                         title = "Zero Telemetry & Tracking",
                         desc = "Effort Logs contains no telemetry, analytics SDKs, external trackers, or account requirements. The application operates completely offline in airplane mode."
                     )
                     PrivacyDetailItem(
-                        icon = "📦",
+                        icon = AppIcons.Download,
                         title = "Full Data Ownership & Portability",
                         desc = "You can export all personal records to JSON or CSV anytime or permanently wipe all local database files with a 2-step confirmation."
                     )
@@ -824,9 +907,22 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun PrivacyDetailItem(icon: String, title: String, desc: String) {
+private fun PrivacyDetailItem(icon: ImageVector, title: String, desc: String) {
     Row(modifier = Modifier.fillMaxWidth()) {
-        Text(icon, fontSize = 18.sp, modifier = Modifier.padding(top = 2.dp))
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+            modifier = Modifier.size(28.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
         Spacer(Modifier.width(10.dp))
         Column {
             Text(

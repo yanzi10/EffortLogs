@@ -22,17 +22,19 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nguyenbaolong.myapplication.core.ui.AppIcons
 import kotlin.math.cos
 import kotlin.math.sin
 
 data class CompanionStage(
     val stageNumber: Int,
     val name: String,
-    val emoji: String,
+    val icon: ImageVector,
     val stageTitle: String,
     val minXp: Int,
     val maxXp: Int,
@@ -45,7 +47,7 @@ fun getCompanionStage(xp: Int): CompanionStage {
         xp < 60 -> CompanionStage(
             stageNumber = 1,
             name = "Effort Sprout",
-            emoji = "🌱",
+            icon = AppIcons.Meditation,
             stageTitle = "Stage 1 • Seedling",
             minXp = 0,
             maxXp = 60,
@@ -55,7 +57,7 @@ fun getCompanionStage(xp: Int): CompanionStage {
         xp < 160 -> CompanionStage(
             stageNumber = 2,
             name = "Growing Sapling",
-            emoji = "🌿",
+            icon = AppIcons.Trophy,
             stageTitle = "Stage 2 • Sapling",
             minXp = 60,
             maxXp = 160,
@@ -65,7 +67,7 @@ fun getCompanionStage(xp: Int): CompanionStage {
         xp < 320 -> CompanionStage(
             stageNumber = 3,
             name = "Blooming Tree",
-            emoji = "🌸",
+            icon = AppIcons.AiBot,
             stageTitle = "Stage 3 • Blooming",
             minXp = 160,
             maxXp = 320,
@@ -75,7 +77,7 @@ fun getCompanionStage(xp: Int): CompanionStage {
         else -> CompanionStage(
             stageNumber = 4,
             name = "Cosmic Guardian",
-            emoji = "🌟",
+            icon = AppIcons.Goal,
             stageTitle = "Stage 4 • Legendary Master",
             minXp = 320,
             maxXp = 500,
@@ -166,12 +168,21 @@ fun GoalCompanionCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "🎉 LEVEL UP! Evolved to ${stage.name}!",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = stage.accentColor
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = AppIcons.Celebrate,
+                                contentDescription = null,
+                                tint = stage.accentColor,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "LEVEL UP! Evolved to ${stage.name}!",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = stage.accentColor
+                            )
+                        }
                         Text(
                             text = "✕",
                             style = MaterialTheme.typography.labelMedium,
@@ -229,9 +240,11 @@ fun GoalCompanionCard(
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = stage.emoji,
-                            fontSize = 32.sp
+                        Icon(
+                            imageVector = stage.icon,
+                            contentDescription = null,
+                            tint = stage.accentColor,
+                            modifier = Modifier.size(36.dp)
                         )
                     }
                 }
@@ -335,7 +348,12 @@ fun GoalCompanionCard(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💬", fontSize = 14.sp)
+                    Icon(
+                        imageVector = AppIcons.Chat,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "\"${stage.quote}\"",
@@ -360,11 +378,20 @@ fun GoalCompanionCard(
                     .fillMaxWidth()
                     .height(40.dp)
             ) {
-                Text(
-                    text = "✨ Plan Goal with AI Assistant ➜",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = AppIcons.AiBot,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = "Plan Goal with AI Assistant ➜",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
