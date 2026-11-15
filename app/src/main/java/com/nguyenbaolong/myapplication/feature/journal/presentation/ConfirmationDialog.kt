@@ -120,43 +120,9 @@ fun ConfirmationDialog(
                     }
                 }
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(4.dp))
 
-                // 2. Offline Vosk Engine / On-Device Banner (Image 2)
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("●", color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                            Spacer(Modifier.width(6.dp))
-                            Text(
-                                text = "OFFLINE VOSK ENGINE • SECURE MIC",
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                        Text(
-                            text = "🔒 100% On-Device",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                // 3. Voice Journal & Soundwave Card (Image 2)
+                // 2. Voice Journal & Soundwave Card
                 Surface(
                     shape = RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -215,14 +181,7 @@ fun ConfirmationDialog(
                             }
                         }
 
-                        Spacer(Modifier.height(10.dp))
-
-                        Text(
-                            text = "🛡️ Audio is temporarily cached locally and deleted immediately after extraction. Never uploaded to the cloud.",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
+                        Spacer(Modifier.height(4.dp))
                     }
                 }
 
@@ -507,6 +466,25 @@ fun ConfirmationDialog(
                                     selectedTimeOfDay = timeOfDay,
                                     onSelect = { if (it != null) timeOfDay = it }
                                 )
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    TextButton(onClick = { activityDate = activityDate.minusDays(1) }) {
+                                        Text("◀ Prev Day", style = MaterialTheme.typography.labelSmall)
+                                    }
+                                    Text(
+                                        text = activityDate.format(DateTimeFormatter.ofPattern("EEE, MMM d", java.util.Locale.US)),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    TextButton(onClick = { activityDate = activityDate.plusDays(1) }) {
+                                        Text("Next Day ▶", style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
                             }
                         }
 

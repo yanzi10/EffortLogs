@@ -109,5 +109,21 @@ class NlpParserTest {
         assertEquals(ActivityCategory.OTHER, result.category)
         assertEquals(null, result.durationMinutes)
     }
+
+    @Test
+    fun testTargetDatePreservedForPastDate() {
+        val pastDate = LocalDate.of(2026, 10, 15)
+        // 1. Without explicit relative date: must preserve past target date
+        val result1 = parser.parse("Studied math for 2 hours", baseDate = pastDate)
+        assertEquals(pastDate, result1.activityDate)
+        assertEquals(120, result1.durationMinutes)
+        assertEquals(ActivityCategory.STUDY, result1.category)
+
+        // 2. With 'yesterday': must compute relative to past target date
+        val result2 = parser.parse("Gym workout for 45 minutes yesterday", baseDate = pastDate)
+        assertEquals(pastDate.minusDays(1), result2.activityDate)
+        assertEquals(45, result2.durationMinutes)
+        assertEquals(ActivityCategory.FITNESS, result2.category)
+    }
 }
 

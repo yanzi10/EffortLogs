@@ -8,5 +8,7 @@ data class HabitEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val cue: String? = null,
-    val targetCompletionsPerWeek: Int = 7
+    val targetCompletionsPerWeek: Int = 7,
+    val frequencyType: String = "DAILY",
+    val targetDays: String = ""
 )

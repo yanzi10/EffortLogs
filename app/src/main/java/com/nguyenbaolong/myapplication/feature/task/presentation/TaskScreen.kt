@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.feature.task.data.local.TaskEntity
 
@@ -241,16 +242,14 @@ private fun ModernTaskCard(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
+            AnimatedCompletionCheck(
                 checked = task.isCompleted,
-                onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.outline
-                )
+                onToggle = onToggle,
+                size = 24.dp,
+                checkedColor = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Text(
                 text = task.title,

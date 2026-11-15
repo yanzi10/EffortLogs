@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
 import com.nguyenbaolong.myapplication.feature.habit.data.local.HabitEntity
 import com.nguyenbaolong.myapplication.ui.theme.*
 import java.time.DayOfWeek
@@ -186,12 +189,21 @@ fun HabitScreen(
 
     if (showAddDialog) {
         HabitDialog(
-            title = "New Daily Habit",
+            title = "New Core Habit",
             initialName = "",
             initialCue = "",
+            initialFrequencyType = "DAILY",
+            initialTargetDays = "",
+            initialTargetPerWeek = 7,
             onDismiss = { showAddDialog = false },
-            onConfirm = { name, cue ->
-                viewModel.addHabit(name, cue.ifBlank { null }, 7)
+            onConfirm = { name, cue, targetPerWeek, freqType, targetDays ->
+                viewModel.addHabit(
+                    name = name,
+                    cue = cue.ifBlank { null },
+                    targetPerWeek = targetPerWeek,
+                    frequencyType = freqType,
+                    targetDays = targetDays
+                )
                 showAddDialog = false
             }
         )
@@ -202,9 +214,19 @@ fun HabitScreen(
             title = "Edit Habit",
             initialName = item.habit.name,
             initialCue = item.habit.cue ?: "",
+            initialFrequencyType = item.habit.frequencyType,
+            initialTargetDays = item.habit.targetDays,
+            initialTargetPerWeek = item.habit.targetCompletionsPerWeek,
             onDismiss = { editingItem = null },
-            onConfirm = { name, cue ->
-                viewModel.updateHabit(item.habit, name, cue.ifBlank { null })
+            onConfirm = { name, cue, targetPerWeek, freqType, targetDays ->
+                viewModel.updateHabit(
+                    habit = item.habit,
+                    newName = name,
+                    newCue = cue.ifBlank { null },
+                    newTargetPerWeek = targetPerWeek,
+                    newFrequencyType = freqType,
+                    newTargetDays = targetDays
+                )
                 editingItem = null
             }
         )
@@ -289,6 +311,22 @@ private fun ModernHabitCard(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
+
+                        val freqLabel = when (item.habit.frequencyType) {
+                            "SPECIFIC_DAYS" -> {
+                                val days = item.habit.targetDays.split(",").mapNotNull { it.trim().toIntOrNull() }
+                                val names = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                                days.mapNotNull { if (it in 1..7) names[it - 1] else null }.joinToString(", ")
+                            }
+                            "WEEKLY_TARGET" -> "${item.habit.targetCompletionsPerWeek}x / week"
+                            else -> "Daily"
+                        }
+                        Text(
+                            text = "🗓️ $freqLabel",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 
@@ -310,6 +348,17 @@ private fun ModernHabitCard(
                             Text("day", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
+
+                    Spacer(Modifier.width(6.dp))
+
+                    AnimatedCompletionCheck(
+                        checked = item.completedToday,
+                        onToggle = onToggle,
+                        size = 26.dp,
+                        checkedColor = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(Modifier.width(2.dp))
 
                     Box {
                         IconButton(onClick = { showMenu = true }, modifier = Modifier.size(28.dp)) {
@@ -430,18 +479,45 @@ private fun HabitDialog(
     title: String,
     initialName: String,
     initialCue: String,
+    initialFrequencyType: String = "DAILY",
+    initialTargetDays: String = "",
+    initialTargetPerWeek: Int = 7,
     onDismiss: () -> Unit,
-    onConfirm: (String, String) -> Unit
+    onConfirm: (name: String, cue: String, targetPerWeek: Int, frequencyType: String, targetDays: String) -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
     var cue by remember { mutableStateOf(initialCue) }
+    var frequencyType by remember { mutableStateOf(initialFrequencyType) }
+    var targetDaysSet by remember {
+        mutableStateOf(
+            if (initialTargetDays.isNotBlank()) {
+                initialTargetDays.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+            } else {
+                setOf(1, 2, 3, 4, 5) // Default weekdays
+            }
+        )
+    }
+    var targetPerWeek by remember { mutableIntStateOf(initialTargetPerWeek.coerceIn(1, 7)) }
     var nameError by remember { mutableStateOf(false) }
+
+    val daysOfWeekLabels = listOf(
+        1 to "Mon",
+        2 to "Tue",
+        3 to "Wed",
+        4 to "Thu",
+        5 to "Fri",
+        6 to "Sat",
+        7 to "Sun"
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title, fontWeight = FontWeight.Bold) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it; nameError = false },
@@ -463,6 +539,120 @@ private fun HabitDialog(
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Text(
+                    text = "Frequency",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                // Frequency Type Selector
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val freqOptions = listOf(
+                        "DAILY" to "Daily",
+                        "SPECIFIC_DAYS" to "Specific Days",
+                        "WEEKLY_TARGET" to "X / Week"
+                    )
+                    freqOptions.forEach { (typeKey, label) ->
+                        val isSelected = frequencyType == typeKey
+                        Surface(
+                            onClick = { frequencyType = typeKey },
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(38.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Sub-selectors based on Frequency Type
+                when (frequencyType) {
+                    "SPECIFIC_DAYS" -> {
+                        Text(
+                            text = "Select active days:",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            daysOfWeekLabels.forEach { (dayNum, dayLabel) ->
+                                val isDaySelected = targetDaysSet.contains(dayNum)
+                                Surface(
+                                    onClick = {
+                                        targetDaysSet = if (isDaySelected) {
+                                            if (targetDaysSet.size > 1) targetDaysSet - dayNum else targetDaysSet
+                                        } else {
+                                            targetDaysSet + dayNum
+                                        }
+                                    },
+                                    shape = CircleShape,
+                                    color = if (isDaySelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                    modifier = Modifier.size(34.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text = dayLabel.take(1),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isDaySelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    "WEEKLY_TARGET" -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Target times per week:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { if (targetPerWeek > 1) targetPerWeek-- }) {
+                                    Text("-", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                }
+                                Text(
+                                    text = "$targetPerWeek times",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                IconButton(onClick = { if (targetPerWeek < 7) targetPerWeek++ }) {
+                                    Text("+", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        Text(
+                            text = "Active all 7 days of the week.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
@@ -471,7 +661,15 @@ private fun HabitDialog(
                     if (name.isBlank()) {
                         nameError = true
                     } else {
-                        onConfirm(name.trim(), cue.trim())
+                        val computedDays = if (frequencyType == "SPECIFIC_DAYS") {
+                            targetDaysSet.sorted().joinToString(",")
+                        } else ""
+                        val computedTarget = when (frequencyType) {
+                            "DAILY" -> 7
+                            "SPECIFIC_DAYS" -> targetDaysSet.size
+                            else -> targetPerWeek
+                        }
+                        onConfirm(name.trim(), cue.trim(), computedTarget, frequencyType, computedDays)
                     }
                 },
                 shape = RoundedCornerShape(10.dp)
