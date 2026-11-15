@@ -41,6 +41,7 @@ import java.util.Locale
 fun StatsScreen(viewModel: StatsViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedFilterIndex by remember { mutableIntStateOf(1) } // 0: Today, 1: This week, 2: This month
+    var showSummaryModal by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -71,10 +72,10 @@ fun StatsScreen(viewModel: StatsViewModel) {
                 ) {
                     Column {
                         Text(
-                            text = "AUTOMATIC ON-DEVICE ANALYTICS",
+                            text = "ANALYTICS & INSIGHTS",
                             style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
@@ -94,6 +95,17 @@ fun StatsScreen(viewModel: StatsViewModel) {
                             Text("📈", fontSize = 16.sp)
                         }
                     }
+                }
+
+                // Activity Card Share Button
+                OutlinedButton(
+                    onClick = { showSummaryModal = true },
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp)
+                ) {
+                    Text("📸 Generate & Share Performance Card", fontWeight = FontWeight.Bold)
                 }
 
                 // 2. Filter Segmented Tabs (Image 4)
@@ -164,19 +176,6 @@ fun StatsScreen(viewModel: StatsViewModel) {
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.secondaryContainer
-                            ) {
-                                Text(
-                                    text = "100% On-Device",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }
                         }
@@ -495,5 +494,12 @@ fun StatsScreen(viewModel: StatsViewModel) {
                 Spacer(Modifier.height(16.dp))
             }
         }
+    }
+
+    if (showSummaryModal) {
+        ActivitySummaryModal(
+            state = state,
+            onDismiss = { showSummaryModal = false }
+        )
     }
 }

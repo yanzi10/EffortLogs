@@ -80,7 +80,7 @@ fun JournalScreen(
         if (result.resultCode == Activity.RESULT_OK) {
             val spoken = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.trim()
             if (!spoken.isNullOrBlank()) {
-                viewModel.processVoiceInput(spoken)
+                viewModel.processVoiceInput(spoken, selectedDate)
             }
         }
     }
@@ -133,7 +133,7 @@ fun JournalScreen(
         if (voiceState is VoiceState.Success) {
             val text = (voiceState as VoiceState.Success).text
             if (text.isNotBlank()) {
-                viewModel.processVoiceInput(text)
+                viewModel.processVoiceInput(text, selectedDate)
                 voiceManager.resetState()
             }
         }
@@ -164,7 +164,7 @@ fun JournalScreen(
                 onTextChange = { textInput = it },
                 onSubmit = {
                     if (textInput.isNotBlank()) {
-                        viewModel.processTextInput(textInput)
+                        viewModel.processTextInput(textInput, selectedDate)
                         textInput = ""
                     }
                 },
@@ -194,7 +194,7 @@ fun JournalScreen(
                         ) {
                             ModernJournalEmptyState(
                                 onSampleClick = { sampleText ->
-                                    viewModel.processVoiceInput(sampleText)
+                                    viewModel.processVoiceInput(sampleText, selectedDate)
                                 },
                                 onMicClick = { triggerVoiceInput() }
                             )

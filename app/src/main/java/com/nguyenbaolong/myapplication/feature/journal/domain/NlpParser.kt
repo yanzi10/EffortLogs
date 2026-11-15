@@ -41,7 +41,7 @@ class NlpParser(
         "fifty" to 50
     )
 
-    fun parse(input: String): NlpResult {
+    fun parse(input: String, baseDate: LocalDate = clock()): NlpResult {
         val trimmed = input.trim()
         if (trimmed.isEmpty()) {
             return NlpResult(
@@ -49,13 +49,12 @@ class NlpParser(
                 detectedAction = "Activity",
                 category = ActivityCategory.OTHER,
                 durationMinutes = null,
-                activityDate = clock(),
+                activityDate = baseDate,
                 timeOfDay = null
             )
         }
 
-        val today = clock()
-        val (date, timeOfDay, dateRegexMatches) = extractDateAndTimeOfDay(trimmed, today)
+        val (date, timeOfDay, dateRegexMatches) = extractDateAndTimeOfDay(trimmed, baseDate)
         val (duration, durationRegexMatches) = extractDuration(trimmed)
         val category = KeywordDictionary.detectCategory(trimmed)
 
@@ -87,15 +86,15 @@ class NlpParser(
 
     private fun extractDateAndTimeOfDay(
         text: String,
-        today: LocalDate
+        baseDate: LocalDate
     ): Triple<LocalDate, TimeOfDay?, List<String>> {
         val lower = text.lowercase()
         val matchedPhrases = mutableListOf<String>()
-        var date = today
+        var date = baseDate
         var timeOfDay: TimeOfDay? = null
 
         if (Regex("""\byesterday\b""").containsMatchIn(lower)) {
-            date = today.minusDays(1)
+            date = baseDate.minusDays(1)
             matchedPhrases.add("yesterday")
         }
 

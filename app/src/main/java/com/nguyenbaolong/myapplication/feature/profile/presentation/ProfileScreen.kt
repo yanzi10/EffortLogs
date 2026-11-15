@@ -2,7 +2,10 @@ package com.nguyenbaolong.myapplication.feature.profile.presentation
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nguyenbaolong.myapplication.core.utils.DateUtils
 import com.nguyenbaolong.myapplication.feature.settings.AppThemeMode
 import com.nguyenbaolong.myapplication.ui.theme.*
 
@@ -39,13 +43,17 @@ import com.nguyenbaolong.myapplication.ui.theme.*
  *    - Habit Check Reminder
  */
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel,
+    onReplayOnboarding: () -> Unit = {}
+) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     var showStep1Dialog by remember { mutableStateOf(false) }
     var showStep2Dialog by remember { mutableStateOf(false) }
     var showStartHourDialog by remember { mutableStateOf(false) }
+    var showAboutPrivacyDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -61,65 +69,36 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Header: LOCAL STORAGE & SECURITY • Zero Cloud (Image 5)
+            // 1. Clean Header: Settings & Storage
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "LOCAL STORAGE & SECURITY",
-                    style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🔒", fontSize = 11.sp)
-                    Spacer(Modifier.width(4.dp))
+                Column {
                     Text(
-                        text = "Zero Cloud",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        text = "PREFERENCES & STORAGE",
+                        style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Settings & Profile",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
-            }
 
-            // 2. Top Privacy Banner (Image 5)
-            Surface(
-                shape = RoundedCornerShape(18.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text("🛡️", fontSize = 12.sp)
-                            }
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = "100% On-Device Security • Zero Cloud Sync",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text("⚙️", fontSize = 16.sp)
                     }
-
-                    Spacer(Modifier.height(6.dp))
-
-                    Text(
-                        text = "All voice logs, schedule tasks, and database records are stored locally on-device. Zero data is ever sent to external cloud servers.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
-                        lineHeight = 18.sp
-                    )
                 }
             }
 
@@ -339,7 +318,7 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                             shape = RoundedCornerShape(8.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            val hourStr = String.format("%02d:00 AM", state.settings.startOfDayHour)
+                            val hourStr = DateUtils.formatHour(state.settings.startOfDayHour)
                             Text(
                                 text = "$hourStr ▾",
                                 style = MaterialTheme.typography.labelMedium,
@@ -462,6 +441,62 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
 
                         Text(">", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                        modifier = Modifier.padding(vertical = 14.dp)
+                    )
+
+                    // Item 4: Replay App Guide / Tutorial
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onReplayOnboarding() },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text("📖", fontSize = 14.sp)
+                                }
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Replay App Guide / Tutorial",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Review features, dashboard & offline AI walkthrough",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        ) {
+                            Text(
+                                text = "Replay ➜",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -583,6 +618,55 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                 }
             }
 
+            // 7. About & Privacy (On-Device Security) Card
+            Surface(
+                onClick = { showAboutPrivacyDialog = true },
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("🛡️", fontSize = 16.sp)
+                            }
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "About & Privacy",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "100% On-Device Security & Privacy Policy",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Text("➔", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
         }
     }
@@ -633,29 +717,51 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
         )
     }
 
-    // Start Hour Dialog
+    // Start Hour Dialog (Full 24-hour range: 00:00 to 23:00)
     if (showStartHourDialog) {
         AlertDialog(
             onDismissRequest = { showStartHourDialog = false },
             title = { Text("Select Start of Day Hour", fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(4, 5, 6, 7).forEach { h ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items((0..23).toList()) { h ->
+                        val isSelected = state.settings.startOfDayHour == h
                         Surface(
                             onClick = {
                                 viewModel.setStartOfDayHour(h)
                                 showStartHourDialog = false
                             },
                             shape = RoundedCornerShape(10.dp),
-                            color = if (state.settings.startOfDayHour == h) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                            border = if (isSelected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = String.format("%02d:00 AM", h),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(14.dp)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = DateUtils.formatHour(h),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                                if (isSelected) {
+                                    Text(
+                                        text = "✓",
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -665,5 +771,77 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                 TextButton(onClick = { showStartHourDialog = false }) { Text("Close") }
             }
         )
+    }
+
+    // Consolidated About & Privacy (On-Device Security) Dialog
+    if (showAboutPrivacyDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutPrivacyDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🛡️", fontSize = 20.sp)
+                    Spacer(Modifier.width(8.dp))
+                    Text("About & Privacy", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    PrivacyDetailItem(
+                        icon = "🔒",
+                        title = "100% On-Device SQLite Storage",
+                        desc = "All tasks, recurring habits, streaks, and effort journal entries are stored strictly in local SQLite tables on this device. Zero cloud synchronization."
+                    )
+                    PrivacyDetailItem(
+                        icon = "🎙️",
+                        title = "Private Voice Recognition",
+                        desc = "Speech recognition runs locally via the Android on-device engine. Voice recordings are processed in temporary memory and deleted immediately after intent extraction."
+                    )
+                    PrivacyDetailItem(
+                        icon = "🚫",
+                        title = "Zero Telemetry & Tracking",
+                        desc = "Effort Logs contains no telemetry, analytics SDKs, external trackers, or account requirements. The application operates completely offline in airplane mode."
+                    )
+                    PrivacyDetailItem(
+                        icon = "📦",
+                        title = "Full Data Ownership & Portability",
+                        desc = "You can export all personal records to JSON or CSV anytime or permanently wipe all local database files with a 2-step confirmation."
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showAboutPrivacyDialog = false },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Got It")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun PrivacyDetailItem(icon: String, title: String, desc: String) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Text(icon, fontSize = 18.sp, modifier = Modifier.padding(top = 2.dp))
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.height(3.dp))
+            Text(
+                text = desc,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 18.sp
+            )
+        }
     }
 }

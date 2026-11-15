@@ -7,11 +7,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,85 +26,69 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nguyenbaolong.myapplication.R
+import com.nguyenbaolong.myapplication.core.ui.AnimatedCompletionCheck
 import com.nguyenbaolong.myapplication.core.utils.TimeOfDay
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitUiItem
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitUiState
 import com.nguyenbaolong.myapplication.feature.habit.presentation.HabitViewModel
-import com.nguyenbaolong.myapplication.feature.journal.presentation.JournalScreen
 import com.nguyenbaolong.myapplication.feature.journal.presentation.JournalViewModel
+import com.nguyenbaolong.myapplication.feature.planner.presentation.AiProposalSheet
+import com.nguyenbaolong.myapplication.feature.settings.SettingsManager
 import com.nguyenbaolong.myapplication.feature.task.data.local.TaskEntity
 import com.nguyenbaolong.myapplication.feature.task.presentation.TaskUiState
 import com.nguyenbaolong.myapplication.feature.task.presentation.TaskViewModel
-import com.nguyenbaolong.myapplication.feature.task.presentation.TimeOfDaySelector
-import com.nguyenbaolong.myapplication.ui.theme.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
 /**
- * Modern Today Screen (All in English) matching Image 3: "Effort Logs / OFFLINE".
- * Features:
- * 1. Top Bar: Effort Logs • OFFLINE • 100% On-Device
- * 2. Privacy subtitle: 100% Local SQLite Storage • Zero Cloud Connection
- * 3. Daily Completion Card with Circular Ring (e.g. 68% Done), Tasks Left, Habits Kept
- * 4. Section: "Core Habits" with 1-tap check
- * 5. Section: "Daily Schedule" grouped by MORNING, AFTERNOON, EVENING
- * 6. Quick FAB / Voice trigger to record effort
+ * Modern Decluttered Today Screen (Bento Summary & Progressive Disclosure).
+ *
+ * 1. Clean Header: Date & Dynamic Greeting (no redundant security banners)
+ * 2. Progress Hero Card: Circular completion ring (Tasks + Habits)
+ * 3. Bento Card: Daily Schedule (Up Next 1–2 tasks + "View Full Schedule")
+ * 4. Bento Card: Core Habits (1–2 pending habits + "Manage Habits")
+ * 5. Bento Card: Quick Effort Journal (Voice + Write actions)
+ * 6. Quick Floating Action Button for Voice Entry
  */
 @Composable
 fun TodayScreen(
     taskViewModel: TaskViewModel,
     habitViewModel: HabitViewModel,
-    journalViewModel: JournalViewModel,
-    initialTab: Int = 0
+    journalViewModel: JournalViewModel? = null,
+    settingsManager: SettingsManager? = null,
+    initialTab: Int = 0,
+    onNavigateToSchedule: () -> Unit = {},
+    onNavigateToHabits: () -> Unit = {},
+    onNavigateToJournal: () -> Unit = {}
 ) {
     val taskState by taskViewModel.uiState.collectAsStateWithLifecycle()
     val habitState by habitViewModel.uiState.collectAsStateWithLifecycle()
+    val appSettings by (settingsManager?.settings?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(null) })
 
-    var showAddTaskDialog by remember { mutableStateOf(false) }
-    var editingTask by remember { mutableStateOf<TaskEntity?>(null) }
-    var showJournalView by remember { mutableStateOf(initialTab == 2) }
+    var showAiProposalSheet by remember { mutableStateOf(false) }
+
+    val primaryGoal = appSettings?.primaryGoal ?: "Master Daily Consistency"
+    val companionName = appSettings?.companionName ?: "Effort Sprout"
+    val companionXp = appSettings?.companionXp ?: 0
 
     val today = LocalDate.now()
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
     val (greeting, greetingEmoji) = when (hour) {
-        in 5..11 -> "Good morning..." to "🌅"
-        in 12..17 -> "Good afternoon..." to "☀️"
-        else -> "Good evening..." to "🌙"
+        in 5..11 -> "Good morning" to "🌅"
+        in 12..17 -> "Good afternoon" to "☀️"
+        else -> "Good evening" to "🌙"
     }
 
-    // English Date Formatter (e.g., "Monday, November 2")
     val formattedDate = today.format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.US))
-
-    if (showJournalView) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { showJournalView = false }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                }
-                Text(
-                    text = "Effort Journal",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            JournalScreen(viewModel = journalViewModel)
-        }
-        return
-    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showJournalView = true },
+                onClick = onNavigateToJournal,
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White,
                 shape = CircleShape,
@@ -139,117 +121,65 @@ fun TodayScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(top = 10.dp, bottom = 96.dp),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Top Bar: Effort Logs OFFLINE • 100% On-Device (Image 3)
+            // 1. Header (Clean, Friendly, Disclaimers removed)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                            modifier = Modifier.size(26.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text("🛡️", fontSize = 13.sp)
-                            }
-                        }
-                        Spacer(Modifier.width(6.dp))
+                    Column {
                         Text(
-                            text = "Effort Logs",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = formattedDate,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "$greeting $greetingEmoji",
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
                         )
-                        Spacer(Modifier.width(8.dp))
-                        // Mint Green OFFLINE Badge
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.secondaryContainer
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("🟢", fontSize = 8.sp)
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    text = "OFFLINE",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
                     }
 
-                    // On-Device Chip
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.size(40.dp)
                     ) {
-                        Text(
-                            text = "● 100% On-Device",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Text("⚡", fontSize = 18.sp)
+                        }
                     }
                 }
             }
 
-            // 2. Greeting Header & Privacy Subtitle Banner (Image 3)
+            // 2. Goal Evolution Companion Card (Gamification & AI Planner)
             item {
-                Column {
-                    Text(
-                        text = formattedDate,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        text = "$greeting $greetingEmoji",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Spacer(Modifier.height(8.dp))
-
-                    // Soft Privacy Banner
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("🛡️", fontSize = 12.sp)
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "100% Local SQLite Storage • Zero Cloud Connection",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
+                GoalCompanionCard(
+                    primaryGoal = primaryGoal,
+                    companionName = companionName,
+                    companionXp = companionXp,
+                    onUpdateGoal = { newGoal, newName ->
+                        settingsManager?.setPrimaryGoal(newGoal)
+                        settingsManager?.setCompanionName(newName)
+                    },
+                    onOpenAiPlanner = {
+                        showAiProposalSheet = true
                     }
-                }
+                )
             }
 
-            // 3. Today's Progress Card with Circular Ring (Image 3)
+            // 3. Today's Progress Hero Card
             item {
                 Surface(
                     shape = RoundedCornerShape(22.dp),
                     color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
                     shadowElevation = 1.dp,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -275,7 +205,7 @@ fun TodayScreen(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                text = "Today's Progress",
+                                text = "Today's Focus",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -289,7 +219,6 @@ fun TodayScreen(
 
                             Spacer(Modifier.height(12.dp))
 
-                            // 2 Pill Counters
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
@@ -333,192 +262,413 @@ fun TodayScreen(
 
                         Spacer(Modifier.width(14.dp))
 
-                        // Circular Progress Ring (Image 3)
                         ModernTodayRing(percentage = completionPercentage)
                     }
                 }
             }
 
-            // 4. Section: Core Habits (Image 3)
+            // 3. Bento Card: Daily Schedule (Up Next 1–2 tasks)
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🔁", fontSize = 14.sp)
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = "Core Habits",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                    Text(
-                        text = "View All >",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable { showJournalView = true }
-                    )
-                }
-            }
-
-            if (currentHabits.isEmpty()) {
-                item {
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = "No active habits yet. Add your first habit in Profile to build consistency.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                }
-            } else {
-                items(currentHabits.take(3), key = { it.habit.id }) { item ->
-                    ModernCoreHabitRow(
-                        item = item,
-                        onToggle = { habitViewModel.toggleToday(item.habit.id) }
-                    )
-                }
-            }
-
-            // 5. Section: Daily Schedule (Image 3)
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📋", fontSize = 14.sp)
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = "Daily Schedule",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-
-                    Surface(
-                        onClick = { showAddTaskDialog = true },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-                    ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("+", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📋", fontSize = 16.sp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Daily Schedule",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                             Text(
-                                text = "Add task",
-                                style = MaterialTheme.typography.labelSmall,
+                                text = "View Full >",
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { onNavigateToSchedule() }
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        val pendingTasks = currentTasks.filter { !it.isCompleted }
+
+                        when {
+                            currentTasks.isEmpty() -> {
+                                Text(
+                                    text = "No tasks scheduled for today. Tap to plan your schedule.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            pendingTasks.isEmpty() -> {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("🎉", fontSize = 16.sp)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = "All tasks completed for today!",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    pendingTasks.take(2).forEach { task ->
+                                        CompactTaskSummaryRow(
+                                            task = task,
+                                            onToggle = {
+                                                val willComplete = !task.isCompleted
+                                                taskViewModel.toggleComplete(task)
+                                                if (willComplete) {
+                                                    settingsManager?.addCompanionXp(10)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedButton(
+                            onClick = onNavigateToSchedule,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                        ) {
+                            Text(
+                                text = if (currentTasks.isEmpty()) "Add First Task ➜" else "View Full Schedule (${currentTasks.size} tasks) ➜",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
                 }
             }
 
-            // Tasks Grouped by Morning, Afternoon, Evening (Image 3)
-            val morningTasks = currentTasks.filter { it.timeOfDay == TimeOfDay.MORNING }
-            val afternoonTasks = currentTasks.filter { it.timeOfDay == TimeOfDay.AFTERNOON }
-            val eveningTasks = currentTasks.filter { it.timeOfDay == TimeOfDay.EVENING }
-            val unscheduledTasks = currentTasks.filter { it.timeOfDay == null }
-
-            // ☀️ MORNING
+            // 4. Bento Card: Core Habits (Progressive Disclosure)
             item {
-                TimeSlotHeader(title = "MORNING", emoji = "☀️")
-            }
-            if (morningTasks.isEmpty()) {
-                item {
-                    EmptyTimeSlotRow(text = "No morning tasks scheduled")
-                }
-            } else {
-                items(morningTasks, key = { it.id }) { task ->
-                    ModernScheduleTaskRow(
-                        task = task,
-                        onToggle = { taskViewModel.toggleComplete(task) },
-                        onEdit = { editingTask = task },
-                        onDelete = { taskViewModel.deleteTask(task) }
-                    )
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("🔁", fontSize = 16.sp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Core Habits",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Text(
+                                text = "Manage >",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { onNavigateToHabits() }
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        val pendingHabits = currentHabits.filter { !it.completedToday }
+
+                        when {
+                            currentHabits.isEmpty() -> {
+                                Text(
+                                    text = "No recurring habits tracked yet. Set daily habits to build consistency.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+                            pendingHabits.isEmpty() -> {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("🔥", fontSize = 16.sp)
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            text = "All core habits checked off today! Great streak.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                            else -> {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    pendingHabits.take(2).forEach { item ->
+                                        CompactHabitSummaryRow(
+                                            item = item,
+                                            onToggle = {
+                                                val willComplete = !item.completedToday
+                                                habitViewModel.toggleToday(item.habit.id)
+                                                if (willComplete) {
+                                                    settingsManager?.addCompanionXp(15)
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+
+                        OutlinedButton(
+                            onClick = onNavigateToHabits,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(40.dp)
+                        ) {
+                            Text(
+                                text = if (currentHabits.isEmpty()) "Create Daily Habit ➜" else "Manage Habits (${currentHabits.size} active) ➜",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
 
-            // ☀️ AFTERNOON
+            // 5. Bento Card: Quick Effort Journal
             item {
-                TimeSlotHeader(title = "AFTERNOON", emoji = "☀️")
-            }
-            if (afternoonTasks.isEmpty()) {
-                item {
-                    EmptyTimeSlotRow(text = "No afternoon tasks scheduled")
-                }
-            } else {
-                items(afternoonTasks, key = { it.id }) { task ->
-                    ModernScheduleTaskRow(
-                        task = task,
-                        onToggle = { taskViewModel.toggleComplete(task) },
-                        onEdit = { editingTask = task },
-                        onDelete = { taskViewModel.deleteTask(task) }
-                    )
-                }
-            }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📖", fontSize = 16.sp)
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = "Effort Journal",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
 
-            // 🌙 EVENING
-            item {
-                TimeSlotHeader(title = "EVENING", emoji = "🌙")
-            }
-            if (eveningTasks.isEmpty() && unscheduledTasks.isEmpty()) {
-                item {
-                    EmptyTimeSlotRow(text = "No evening tasks scheduled")
+                            Text(
+                                text = "Open >",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.clickable { onNavigateToJournal() }
+                            )
+                        }
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            text = "What did you accomplish or learn today?",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Button(
+                                onClick = onNavigateToJournal,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                            ) {
+                                Text("🎙️ Voice Entry", fontWeight = FontWeight.Bold)
+                            }
+
+                            OutlinedButton(
+                                onClick = onNavigateToJournal,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(44.dp)
+                            ) {
+                                Text("✍️ Quick Log", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
                 }
-            } else {
-                items(eveningTasks + unscheduledTasks, key = { it.id }) { task ->
-                    ModernScheduleTaskRow(
-                        task = task,
-                        onToggle = { taskViewModel.toggleComplete(task) },
-                        onEdit = { editingTask = task },
-                        onDelete = { taskViewModel.deleteTask(task) }
+            }
+        }
+
+        if (showAiProposalSheet) {
+            AiProposalSheet(
+                taskViewModel = taskViewModel,
+                habitViewModel = habitViewModel,
+                onDismiss = { showAiProposalSheet = false }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactTaskSummaryRow(
+    task: TaskEntity,
+    onToggle: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AnimatedCompletionCheck(
+                checked = task.isCompleted,
+                onToggle = onToggle,
+                size = 24.dp,
+                checkedColor = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else null,
+                    color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                )
+                task.timeOfDay?.let { tod ->
+                    val todLabel = when (tod) {
+                        TimeOfDay.MORNING -> "🌅 Morning"
+                        TimeOfDay.AFTERNOON -> "☀️ Afternoon"
+                        TimeOfDay.EVENING -> "🌙 Evening"
+                    }
+                    Text(
+                        text = todLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
         }
     }
+}
 
-    if (showAddTaskDialog) {
-        AddScheduleTaskDialog(
-            onDismiss = { showAddTaskDialog = false },
-            onConfirm = { title, timeOfDay ->
-                taskViewModel.addTask(title, timeOfDay)
-                showAddTaskDialog = false
-            }
-        )
-    }
+@Composable
+private fun CompactHabitSummaryRow(
+    item: HabitUiItem,
+    onToggle: () -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AnimatedCompletionCheck(
+                checked = item.completedToday,
+                onToggle = onToggle,
+                size = 24.dp,
+                checkedColor = MaterialTheme.colorScheme.secondary
+            )
 
-    editingTask?.let { task ->
-        EditScheduleTaskDialog(
-            task = task,
-            onDismiss = { editingTask = null },
-            onConfirm = { newTitle, newTimeOfDay ->
-                taskViewModel.updateTask(task, newTitle, newTimeOfDay)
-                editingTask = null
+            Spacer(Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = item.habit.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    item.habit.cue?.let { cue ->
+                        Text(
+                            text = "⏰ $cue  ",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (item.currentStreak > 0) {
+                        Text(
+                            text = "🔥 ${item.currentStreak}d streak",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = Color(0xFFD97706),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
-        )
+        }
     }
 }
 
@@ -568,308 +718,4 @@ private fun ModernTodayRing(percentage: Int) {
             )
         }
     }
-}
-
-/**
- * Core Habit Row matching Image 3:
- * [ Icon in square ] Name, Cue, Streak | Green Circle Check
- */
-@Composable
-private fun ModernCoreHabitRow(
-    item: HabitUiItem,
-    onToggle: () -> Unit
-) {
-    val habitEmoji = when {
-        item.habit.name.contains("water", ignoreCase = true) || item.habit.name.contains("drink", ignoreCase = true) -> "💧"
-        item.habit.name.contains("read", ignoreCase = true) || item.habit.name.contains("book", ignoreCase = true) -> "📖"
-        item.habit.name.contains("meditat", ignoreCase = true) || item.habit.name.contains("breath", ignoreCase = true) -> "🧘"
-        item.habit.name.contains("gym", ignoreCase = true) || item.habit.name.contains("run", ignoreCase = true) || item.habit.name.contains("workout", ignoreCase = true) -> "🏃"
-        else -> "🎯"
-    }
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onToggle() }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
-                    modifier = Modifier.size(42.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(habitEmoji, fontSize = 20.sp)
-                    }
-                }
-
-                Spacer(Modifier.width(12.dp))
-
-                Column {
-                    Text(
-                        text = item.habit.name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    item.habit.cue?.let { cue ->
-                        Text(
-                            text = "⏰ Cue: $cue",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🔥", fontSize = 10.sp)
-                        Spacer(Modifier.width(3.dp))
-                        Text(
-                            text = if (item.currentStreak > 0) "${item.currentStreak}-day Streak" else "Started today",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                            color = if (item.currentStreak > 0) Color(0xFFD97706) else MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            }
-
-            // Green Check Circle (Image 3)
-            Surface(
-                onClick = onToggle,
-                shape = CircleShape,
-                color = if (item.completedToday) MaterialTheme.colorScheme.secondary else Color.Transparent,
-                border = if (!item.completedToday) BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline) else null,
-                modifier = Modifier.size(34.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    if (item.completedToday) {
-                        Text("✓", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TimeSlotHeader(title: String, emoji: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 6.dp, bottom = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(emoji, fontSize = 12.sp)
-        Spacer(Modifier.width(6.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 0.8.sp),
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun EmptyTimeSlotRow(text: String) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-        )
-    }
-}
-
-/**
- * Schedule Task Row matching Image 3:
- * [✓] Title  Time
- */
-@Composable
-private fun ModernScheduleTaskRow(
-    task: TaskEntity,
-    onToggle: () -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onToggle() }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                modifier = Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Circle checkbox
-                Surface(
-                    shape = CircleShape,
-                    color = if (task.isCompleted) Color(0xFF10B981) else Color.Transparent,
-                    border = if (!task.isCompleted) BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline) else null,
-                    modifier = Modifier.size(22.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        if (task.isCompleted) {
-                            Text("✓", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
-                        }
-                    }
-                }
-
-                Spacer(Modifier.width(10.dp))
-
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (task.isCompleted) FontWeight.Normal else FontWeight.Medium,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (task.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Box {
-                IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Options", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
-                }
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                    DropdownMenuItem(
-                        text = { Text("Edit") },
-                        onClick = { showMenu = false; onEdit() },
-                        leadingIcon = { Icon(Icons.Default.Edit, null) }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        onClick = { showMenu = false; onDelete() },
-                        leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AddScheduleTaskDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String, TimeOfDay?) -> Unit
-) {
-    var title by remember { mutableStateOf("") }
-    var selectedTimeOfDay by remember { mutableStateOf<TimeOfDay?>(TimeOfDay.MORNING) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add New Task", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Task Title") },
-                    placeholder = { Text("e.g., Read research paper, Team sync...") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text("Time of Day", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-
-                TimeOfDaySelector(
-                    selectedTimeOfDay = selectedTimeOfDay,
-                    onSelect = { selectedTimeOfDay = it }
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { if (title.isNotBlank()) onConfirm(title.trim(), selectedTimeOfDay) },
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
-    )
-}
-
-@Composable
-private fun EditScheduleTaskDialog(
-    task: TaskEntity,
-    onDismiss: () -> Unit,
-    onConfirm: (String, TimeOfDay?) -> Unit
-) {
-    var title by remember { mutableStateOf(task.title) }
-    var selectedTimeOfDay by remember { mutableStateOf(task.timeOfDay) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Edit Task", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Task Title") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text("Time of Day", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-
-                TimeOfDaySelector(
-                    selectedTimeOfDay = selectedTimeOfDay,
-                    onSelect = { selectedTimeOfDay = it }
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { if (title.isNotBlank()) onConfirm(title.trim(), selectedTimeOfDay) },
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text("Update")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
-    )
 }

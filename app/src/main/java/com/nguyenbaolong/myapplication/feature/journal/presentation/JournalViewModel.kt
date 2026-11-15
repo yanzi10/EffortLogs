@@ -38,15 +38,15 @@ class JournalViewModel(
         _selectedDate.value = date
     }
 
-    fun processTextInput(text: String) {
+    fun processTextInput(text: String, targetDate: LocalDate = _selectedDate.value) {
         if (text.isBlank()) return
-        val result = nlpParser.parse(text)
+        val result = nlpParser.parse(input = text, baseDate = targetDate)
         _pendingConfirmation.value = Pair(result, InputType.TEXT)
     }
 
-    fun processVoiceInput(transcript: String) {
+    fun processVoiceInput(transcript: String, targetDate: LocalDate = _selectedDate.value) {
         if (transcript.isBlank()) return
-        val result = nlpParser.parse(transcript)
+        val result = nlpParser.parse(input = transcript, baseDate = targetDate)
         _pendingConfirmation.value = Pair(result, InputType.VOICE)
     }
 

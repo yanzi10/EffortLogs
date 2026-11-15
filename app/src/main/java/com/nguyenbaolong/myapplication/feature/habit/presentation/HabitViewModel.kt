@@ -35,7 +35,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
                 repository.getCompletionsForHabit(habit.id).map { completions ->
                     val dates = completions.map { it.completedDate }
                     val today = LocalDate.now()
-                    val (current, best) = calculateStreaks(dates)
+                    val (current, best) = calculateStreaks(dates = dates, today = today, habit = habit)
                     HabitUiItem(
                         habit = habit,
                         completedToday = dates.contains(today),
@@ -49,13 +49,21 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HabitUiState.Loading)
 
-    fun addHabit(name: String, cue: String?, targetPerWeek: Int) {
+    fun addHabit(
+        name: String,
+        cue: String?,
+        targetPerWeek: Int = 7,
+        frequencyType: String = "DAILY",
+        targetDays: String = ""
+    ) {
         viewModelScope.launch {
             repository.addHabit(
                 HabitEntity(
                     name = name,
                     cue = cue,
-                    targetCompletionsPerWeek = targetPerWeek.coerceIn(1, 7)
+                    targetCompletionsPerWeek = targetPerWeek.coerceIn(1, 7),
+                    frequencyType = frequencyType,
+                    targetDays = targetDays
                 )
             )
         }
@@ -73,9 +81,24 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
-    fun updateHabit(habit: HabitEntity, newName: String, newCue: String?) {
+    fun updateHabit(
+        habit: HabitEntity,
+        newName: String = habit.name,
+        newCue: String? = habit.cue,
+        newTargetPerWeek: Int = habit.targetCompletionsPerWeek,
+        newFrequencyType: String = habit.frequencyType,
+        newTargetDays: String = habit.targetDays
+    ) {
         viewModelScope.launch {
-            repository.updateHabit(habit.copy(name = newName, cue = newCue))
+            repository.updateHabit(
+                habit.copy(
+                    name = newName,
+                    cue = newCue,
+                    targetCompletionsPerWeek = newTargetPerWeek.coerceIn(1, 7),
+                    frequencyType = newFrequencyType,
+                    targetDays = newTargetDays
+                )
+            )
         }
     }
 }
